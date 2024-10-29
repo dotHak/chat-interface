@@ -1,0 +1,5 @@
+[tool.pyright]
+venvPath = "/home/hubie/.anaconda3/envs/"
+venv = "capstone"
+reportUnusedVariable = true
+reportUnusedImport = true
