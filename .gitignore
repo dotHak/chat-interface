@@ -8,3 +8,7 @@ __pycache__/
 
 openapi_spec.yaml
 chainlit.md
+
+# config files
+.idea/
+.ropeproject/

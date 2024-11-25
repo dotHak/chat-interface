@@ -1,0 +1,62 @@
+[
+    {
+        "type": "GENERAL PRACTITIONER",
+        "also_referred_to_as": "GP or family practitioner (FP), Family doctor",
+        "short_description": "A medical practitioner whose practice is not limited to any specific branch of medicine or class of diseases.",
+        "full_description": "A medical practitioner whose practice is not limited to any specific branch of medicine or class of diseases."
+    },
+    {
+        "type": "CLINICAL PHARMACOLOGIST",
+        "also_referred_to_as": "Pharmacist, Science of drugs",
+        "short_description": "Clinical pharmacology connects the gap between medical practice and laboratory science.",
+        "full_description": "The main objective is to promote the safety of prescription, maximize the drug effects, and minimize the side effects."
+    },
+    {
+        "type": "CARDIOLOGIST",
+        "also_referred_to_as": "Heart specialist",
+        "short_description": "A doctor who specializes in dealing with disorders of the heart.",
+        "full_description": "Cardiologists are physicians who provide medical diagnosis and treatment of congenital heart defects, coronary artery disease, heart failure, valvular heart disease, and electrophysiology."
+    },
+    {
+        "type": "DERMATOLOGIST",
+        "also_referred_to_as": "Skin specialist",
+        "short_description": "A doctor who specializes in the treatment of diseases of the skin.",
+        "full_description": "A dermatologist is a physician who specializes in the diagnosis and treatment of skin disorders."
+    },
+    {
+        "type": "ENT SPECIALIST",
+        "also_referred_to_as": "Ears, nose, and throat specialist",
+        "short_description": "An ENT specializes in matters of the ears, nose, and throat.",
+        "full_description": "Otolaryngologists are physicians trained in the medical and surgical management and treatment of patients with diseases and disorders of the ear, nose, throat (ENT), and related structures of the head and neck."
+    },
+    {
+        "type": "GASTROENTEROLOGIST",
+        "also_referred_to_as": "Stomach and intestines specialist",
+        "short_description": "A specialist who deals with diseases of the stomach and intestines.",
+        "full_description": "A gastroenterologist is a physician who deals with diseases affecting the gastrointestinal tract, which includes the organs from mouth to anus, along the alimentary canal."
+    },
+    {
+        "type": "GYNAECOLOGIST",
+        "also_referred_to_as": "Female reproductive specialist",
+        "short_description": "Specialist dealing with the health of the female reproductive and sexual systems.",
+        "full_description": "A gynaecologist is a physician dealing with the health of the female reproductive and sexual systems (uterus, vagina, ovaries, and breasts)."
+    },
+    {
+        "type": "NEUROLOGIST",
+        "also_referred_to_as": "Nervous system specialist",
+        "short_description": "A doctor who specializes in diagnosing and treating disorders of the nervous system.",
+        "full_description": "A neurologist specializes in the diagnosis and treatment of all categories of conditions and diseases involving the central and peripheral nervous system."
+    },
+    {
+        "type": "PSYCHIATRIST",
+        "also_referred_to_as": "Mental health specialist",
+        "short_description": "Specializes in the diagnosis and treatment of mental disorders.",
+        "full_description": "A psychiatrist is essentially a medical psychologist or a psychologist who can prescribe medications. Psychiatrists study and treat mental disorders such as phobias."
+    },
+    {
+        "type": "SURGEON",
+        "also_referred_to_as": "A doctor who operates to correct medical problems",
+        "short_description": "A doctor who performs operations to fix internal problems.",
+        "full_description": "A surgeon performs surgery; i.e., operates on someone to fix an internal medical problem."
+    }
+]
