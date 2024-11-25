@@ -3,7 +3,7 @@
 from typing import Any
 
 class Resource:
-    class ChatInterface:
+    class HChatInterface:
         service: str
         type: str
         url: str

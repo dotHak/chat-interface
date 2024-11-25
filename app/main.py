@@ -1,12 +1,26 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from dotenv import load_dotenv
 from typing import Any
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 from graph.graph import build_hospital_system_graph, get_memory_config
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://api.yourdoc.click",
+        "https://chat.yourdoc.click",
+        "https://yourdoc.click",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
 graph = build_hospital_system_graph()
 
 
