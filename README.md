@@ -19,11 +19,11 @@ pip install -r requirements.txt
 ### Development
 - Run the following command to start the chat interface:
 ```bash
-python -m fastapi dev main.py
+python -m fastapi dev app/main.py
 ```
 or
 ```bash
-fastapi dev main.py
+fastapi dev app/main.py
 ```
 
 - Open the interface in your browser by visiting the following URL:
@@ -31,11 +31,11 @@ http://localhost:8000
 
 ### Production
 ```bash
-python -m fastapi run main.py
+python -m fastapi run app/main.py
 ```
 or
 ```bash
-fastapi run main.py
+fastapi run app/main.py
 ```
 
 ## Environment Variables
@@ -46,4 +46,18 @@ MOCK_HOSPITAL_SYSTEM_BASE_URL=<MOCK_HOSPITAL_SYSTEM_BASE_URL>
 LANGCHAIN_API_KEY=<YOUR_LANGCHAIN_API_KEY>
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=hospital-navigation
+```
+
+## Deployment
+### Prerequisites
+- Docker
+- SST (Serverless Stack Toolkit) CLI. You can read more [here](https://sst.dev/docs)
+- AWS Account
+- AWS CLI
+
+### Deployment Steps
+- Create a `.env.production` file in the root directory of the project and add the environment variables mentioned above.
+- Run the following command to deploy the project:
+```bash
+sst deploy --stage production
 ```

@@ -46,7 +46,7 @@ def retrieve_hospital_info(state: HospitalSystemState):
     query = state["query"]
 
     # Search for the query
-    results = gene.search(query, k=50)
+    results = gene.search(query, k=15)
     if results:
         results = gene.format(results)
     else:

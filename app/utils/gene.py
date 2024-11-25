@@ -19,7 +19,7 @@ class Gene:
     def __init__(
         self,
         all_docs: List[Document],
-        should_persist: bool = False,
+        should_persist: bool = True,
         should_override_persist: bool = False,
         persist_index: str = "faiss_index",
         embeddings_model: str = "text-embedding-ada-002",
@@ -32,9 +32,9 @@ class Gene:
         self.embeddings_size = embeddings_size
         self.vector_store = self.load_vector_store(all_docs)
 
-    def persist(self):
-        if not self.is_index_saved() and self.should_override_persist:
-            self.vector_store.save_local(self.persist_index)
+    def persist(self, vector_store: FAISS):
+        if not self.is_index_saved() or self.should_override_persist:
+            vector_store.save_local(self.persist_index)
 
     def load_vector_store(self, docs: List[Document]):
 
@@ -57,7 +57,7 @@ class Gene:
             docs_ids = [doc.id for doc in docs]
             vector_store.add_documents(documents=docs, ids=docs_ids)
             if self.should_persist:
-                self.persist()
+                self.persist(vector_store)
 
         return vector_store
 

@@ -1,7 +1,4 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi import HTTPException
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from typing import Any
 
@@ -26,17 +23,6 @@ class ConnectionManager:
 
     async def send(self, message: dict, websocket: WebSocket):
         await websocket.send_json(message)
-
-
-class SPAStaticFiles(StaticFiles):
-    async def get_response(self, path: str, scope):
-        try:
-            return await super().get_response(path, scope)
-        except (HTTPException, StarletteHTTPException) as ex:
-            if ex.status_code == 404:
-                return await super().get_response("index.html", scope)
-            else:
-                raise ex
 
 
 manager = ConnectionManager()
@@ -108,6 +94,11 @@ async def process_event(
         )
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id)
@@ -154,8 +145,3 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     except WebSocketDisconnect:
         print("websocket disconnected")
         manager.disconnect(websocket, client_id)
-
-
-app.mount(
-    "/", SPAStaticFiles(directory="ui", html=True), name="chat-ui-static-files"
-)

@@ -13,3 +13,8 @@ chainlit.md
 # config files
 .idea/
 .ropeproject/
+
+faiss_index
+
+# sst
+.sst
