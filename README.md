@@ -57,6 +57,7 @@ LANGCHAIN_PROJECT=hospital-navigation
 
 ### Deployment Steps
 - Create a `.env.production` file in the root directory of the project and add the environment variables mentioned above.
+- Update the configuration in `sst.config.ts` to match your AWS account or resources.
 - Run the following command to deploy the project:
 ```bash
 sst deploy --stage production
