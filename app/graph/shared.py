@@ -20,6 +20,11 @@ class DoctorAvailability(BaseModel):
     end_date: Union[str, None] = Field(
         None, description="The end date of the availability check."
     )
+    specialists: List[str] = Field([], description="The list of specialists.")
+
+    symptoms_description: Union[str, None] = Field(
+        None, description="The description of the symptoms."
+    )
     stop_processing: bool = Field(
         False, description="Stop processing the request."
     )
@@ -181,6 +186,7 @@ class HospitalSystemState(MessagesState):
     loading_message: str
     status: Literal["stopped", "completed", "running"]
     restart_graph: bool
+    from_availability_agent: bool
 
 
 class NextHospitalSystemState(TypedDict):
@@ -213,3 +219,4 @@ class NextHospitalSystemState(TypedDict):
     loading_message: NotRequired[str]
     status: NotRequired[Literal["stopped", "completed", "running"]]
     restart_graph: NotRequired[bool]
+    from_availability_agent: NotRequired[bool]

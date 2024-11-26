@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
-from graph.graph import build_hospital_system_graph, get_memory_config
+from graph.graph import (
+    build_hospital_system_graph,
+    get_memory_config,
+    save_graph_image_to_file,
+)
 
 app = FastAPI()
 app.add_middleware(
@@ -22,6 +26,7 @@ app.add_middleware(
 )
 
 graph = build_hospital_system_graph()
+save_graph_image_to_file("docs/hospital_graph.png")
 
 
 class ConnectionManager:

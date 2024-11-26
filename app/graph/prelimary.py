@@ -16,6 +16,7 @@ from graph.shared import (
 
 patient_intent_system_prompt = """
 You are an AI assistant designed to detect the intent behind a patient's request. Classify the intent into one of the following categories:
+if the user request is related to question about booking an appointment, it be should treated as hospital information or general information.
 
 1. `booking-appointment`: The user is trying to book an appointment with a doctor or inquire about availability for booking.
 2. `hospital-info`: The user is asking for information related to the hospital, such as services, doctor details, or facilities.

@@ -23,8 +23,9 @@ START = "detect_patient_intent"
 
 NextState = Optional[HospitalSystemState]
 
-ask_availability_system_prompt = """You are an AI assistant helping patients book doctor appointments. When key details like the doctor's name or the date are missing, ask the patient for the missing information in a clear and polite manner.
-
+ask_availability_system_prompt = """You are an AI assistant helping patients book doctor appointments. Ask the patient for the `date`, `date range`, `symptoms description` or a `specialist` if they don't know the doctor's name. Ensure the patient provides all the necessary details to book an appointment. When key details like the doctor's name or the date are missing, ask the patient for the missing information in a clear and polite manner.
+[Currentl known detail]:
+{known_details}
 [Fields to ask to check availability]:
 {missing_details}
 
@@ -37,9 +38,10 @@ Follow these guidelines:
 3. Do not ask to confirm provided details unless you are unsure, in this case, state the details and ask for confirmation.
 4. IF FIELD IS NOT IN MISSING DETAILS, DO NOT ASK FOR IT.
 
-
 If any field is missing:
 - **Doctor's Name**: Politely ask the patient to specify the doctor's name.
+- **Specialist**: Politely ask the patient to specify the specialist if they don't know the doctor's name.
+- **Symptoms Description**: Politely ask the patient to provide a brief description of their symptoms if they don't know the doctor's name.
 - **Date or Date Range**: Politely ask the patient to provide the date or date range for the appointment."""
 
 
@@ -53,10 +55,17 @@ def ask_availability_details(state: HospitalSystemState):
 
     # Check for missing details
     missing_details = []
+    known_details = []
     if not doctor_name:
         missing_details.append(" - Doctor's Name")
+        missing_details.append(" - Specialist")
+        missing_details.append(" - Symptoms description")
     elif doctor_name and doctor_not_found:
         missing_details.append(f" - {doctor_name} is not found.")
+        missing_details.append(" - Specialist")
+        missing_details.append(" - Symptoms description")
+    else:
+        known_details.append(f" - Doctor's Name: {doctor_name}")
 
     if not start_date or not end_date:
         missing_details.append(" - Date or Date Range")
@@ -64,10 +73,13 @@ def ask_availability_details(state: HospitalSystemState):
         missing_details.append(
             f" - No availability found for {doctor_name} from {start_date} to {end_date}"
         )
+    else:
+        known_details.append(f" - Date: {start_date} to {end_date}")
 
     # Build the system message
     formatted_system_prompt = ask_availability_system_prompt.format(
-        missing_details="\n".join(missing_details)
+        missing_details="\n".join(missing_details),
+        known_details="\n".join(known_details),
     )
 
     messages = [SystemMessage(content=formatted_system_prompt)]
@@ -87,6 +99,8 @@ availability_chat_system_prompt = """You are an AI assistant tasked with extract
 3. Extract the following details, but ignore any that are not explicitly mentioned in the query:
    - `doctor_name`: The name of the doctor mentioned in the query include their title eg Dr. Sam, or exclude it if not provided.
    - `start_date` and `end_date`: The date range for the availability check, or exclude them if not provided.
+   - symptoms_description: Extract symptoms or diseases described in the query, if mentioned.
+   - specialists: Identify and list the specialists explicitly mentioned in the query. This should be a list of strings.
 4. If the user show any indication of stopping or cancelling or requesting for information, set the `stop_procceing` true or false.
 """
 
@@ -115,6 +129,7 @@ def availability_chat_agent(state: HospitalSystemState):
         "response_type": "message",
         "status": "running",
         "loading_message": "Finding doctors...",
+        "from_availability_agent": False,
     }
 
     if availability.doctor_name:
@@ -125,6 +140,16 @@ def availability_chat_agent(state: HospitalSystemState):
 
     if availability.end_date:
         next_state["end_date"] = availability.end_date
+
+    if availability.specialists:
+        next_state["specialists"] = availability.specialists
+        next_state["loading_message"] = "Finding specialists..."
+        next_state["from_availability_agent"] = True
+
+    if availability.symptoms_description:
+        next_state["symptoms_description"] = availability.symptoms_description
+        next_state["loading_message"] = "Finding potential doctors..."
+        next_state["from_availability_agent"] = True
 
     if availability.stop_processing:
         next_state["loading_message"] = "Stopping the process..."
@@ -137,6 +162,12 @@ def availability_chat_agent(state: HospitalSystemState):
 
 def should_continue_to_find_doctor(state: HospitalSystemState):
     restart_graph = state.get("restart_graph", False)
+    from_availability_agent = state.get("from_availability_agent", False)
+    specialists = state.get("specialists", [])
+    symptoms_description = state.get("symptoms_description", None)
+
+    if from_availability_agent and (specialists or symptoms_description):
+        return "find_potential_doctors"
 
     if restart_graph:
         return START

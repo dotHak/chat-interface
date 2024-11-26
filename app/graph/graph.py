@@ -113,7 +113,7 @@ def build_hospital_system_graph():
     hospital_builder.add_conditional_edges(
         "availability_chat_agent",
         should_continue_to_find_doctor,
-        ["find_doctor", "detect_patient_intent"],
+        ["find_doctor", "detect_patient_intent", "find_potential_doctors"],
     )
     hospital_builder.add_conditional_edges(
         "find_doctor",
