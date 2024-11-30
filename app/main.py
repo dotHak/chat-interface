@@ -1,15 +1,13 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from dotenv import load_dotenv
 from typing import Any
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 load_dotenv()
 
-from graph.graph import (
-    build_hospital_system_graph,
-    get_memory_config,
-    save_graph_image_to_file,
-)
+from graph.graph import build_hospital_system_graph, get_memory_config
+from db.feedback_db import FeedbackRequest, Feedback, get_db
 
 app = FastAPI()
 app.add_middleware(
@@ -18,7 +16,6 @@ app.add_middleware(
         "https://api.yourdoc.click",
         "https://chat.yourdoc.click",
         "https://yourdoc.click",
-        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
@@ -26,7 +23,6 @@ app.add_middleware(
 )
 
 graph = build_hospital_system_graph()
-save_graph_image_to_file("docs/hospital_graph.png")
 
 
 class ConnectionManager:
@@ -51,10 +47,15 @@ async def process_event(
     event: dict[str, Any] | Any,
     manager: ConnectionManager,
     websocket: WebSocket,
+    client_id: str,
 ):
     response_type = event.get("response_type", None)
     status = event.get("status", "")
     loading_message = event.get("loading_message", "")
+    # print(status, loading_message)
+    # config = get_memory_config(client_id)
+    # graph_state = graph.get_state(config)
+    # print(graph_state.next)
     if status == "completed" or status == "stopped":
         if response_type == "message":
             # get last message
@@ -118,6 +119,33 @@ def health_check():
     return {"status": "healthy"}
 
 
+@app.post("/feedback")
+async def submit_feedback(
+    feedback_data: FeedbackRequest, db: Session = Depends(get_db)
+):
+    # Create feedback object
+    feedback_entry = Feedback(
+        feedback=feedback_data.feedback,
+        comments=feedback_data.comments,
+        message_before=feedback_data.message_before,
+        message_after=feedback_data.message_after,
+        message_type=feedback_data.message_type,
+        message=feedback_data.message,
+        user_message=feedback_data.user_message,
+    )
+    db.add(feedback_entry)
+    db.commit()
+    db.refresh(feedback_entry)
+    return {"status": "success", "data": feedback_entry.id}
+
+
+# GET endpoint to retrieve all feedback
+@app.get("/feedback")
+async def get_feedback(db: Session = Depends(get_db)):
+    feedback_list = db.query(Feedback).all()
+    return {"status": "success", "data": [f.__dict__ for f in feedback_list]}
+
+
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id)
@@ -150,7 +178,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                     config,
                     stream_mode="values",
                 ):
-                    await process_event(event, manager, websocket)
+                    await process_event(event, manager, websocket, client_id)
 
             else:
                 # Process the LLM invocation asynchronously
@@ -159,7 +187,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                     config,
                     stream_mode="values",
                 ):
-                    await process_event(event, manager, websocket)
+                    await process_event(event, manager, websocket, client_id)
 
     except WebSocketDisconnect:
         print("websocket disconnected")

@@ -23,10 +23,11 @@ START = "detect_patient_intent"
 
 NextState = Optional[HospitalSystemState]
 
-ask_availability_system_prompt = """You are an AI assistant helping patients book doctor appointments. Ask the patient for the `date`, `date range`, `symptoms description` or a `specialist` if they don't know the doctor's name. Ensure the patient provides all the necessary details to book an appointment. When key details like the doctor's name or the date are missing, ask the patient for the missing information in a clear and polite manner.
-[Currentl known detail]:
+ask_availability_system_prompt = """You are an AI assistant helping patients book doctor appointments. Ask the patient for the`doctor's name`, `date` or `date range`, `symptoms description` or a `specialist` if they don't know the doctor's name. Ensure the patient provides all the necessary details to book an appointment. When key details like the `doctor's name` or the `date` are unknown, ask the patient to provide information in a clear and polite manner. If the doctors name is known, state the name in the prompt.
+[Known details]:
 {known_details}
-[Fields to ask to check availability]:
+
+[Unkown details]:
 {missing_details}
 
 Follow these guidelines:
@@ -35,14 +36,14 @@ Follow these guidelines:
    - A single date: `20 Nov`, `25 Nov 2024`
    - A date range: `from 20 to 25 Nov`
    - Relative dates: `tomorrow`, `next week`
-3. Do not ask to confirm provided details unless you are unsure, in this case, state the details and ask for confirmation.
-4. IF FIELD IS NOT IN MISSING DETAILS, DO NOT ASK FOR IT.
+3. IF THE FIELD IS NOT IN UNKNOWN DETAILS, DO NOT ASK FOR IT.
 
-If any field is missing:
+If any field is unknown:
 - **Doctor's Name**: Politely ask the patient to specify the doctor's name.
 - **Specialist**: Politely ask the patient to specify the specialist if they don't know the doctor's name.
 - **Symptoms Description**: Politely ask the patient to provide a brief description of their symptoms if they don't know the doctor's name.
-- **Date or Date Range**: Politely ask the patient to provide the date or date range for the appointment."""
+- **Date or Date Range**: Politely ask the patient to provide the date or date range for the appointment.
+"""
 
 
 def ask_availability_details(state: HospitalSystemState):
@@ -128,7 +129,7 @@ def availability_chat_agent(state: HospitalSystemState):
         "messages": [HumanMessage(content=query)],
         "response_type": "message",
         "status": "running",
-        "loading_message": "Finding doctors...",
+        "loading_message": "Verifying doctor's name...",
         "from_availability_agent": False,
     }
 
@@ -385,23 +386,22 @@ def should_continue_to_ask_appointment_info(state: HospitalSystemState):
 
 
 ask_appointment_info_system_prompt = """
-You are an AI assistant helping patients book doctor appointments. When key details like the patient's full name, email, or reason for the appointment are missing, ask the patient for the missing information in a clear and polite manner.
+You are an AI assistant helping patients book doctor appointments. Your task is to ask patients to provide their `full name`, `email`, and `reason` for the appointment. Ask the patient for the information in a clear and polite manner.
 
-Info to ask for the appointment:
+[missing]:
 {missing_details}
 
 Follow these guidelines:
 1. Use well-structured **markdown** to make the prompt user-friendly and visually clear.
-2. Ask for one missing piece of information at a time to avoid overwhelming the user.
-   - Example for **Full Name**: "Could you please provide your full name?"
-   - Example for **Email**: "Could you share your email address so we can confirm your booking?"
-   - Example for **Reason**: "Could you let us know the reason for the appointment?"
-3. Do not ask to confirm provided details unless you are unsure. If unsure, state the provided details and ask for confirmation.
-
-If multiple fields are missing:
-- List the missing details clearly and ask for them one at a time.
+2. List all the details that user needs to provide for the appointment.
+3. If the is not in the missing details, do not ask for it.
+4. Ask for one missing piece of information at a time to avoid overwhelming the user.
+5. Do not ask to confirm provided details unless you are unsure. If unsure, state the provided details and ask for confirmation.
+6. If multiple fields are missing, list the all missing details clearly.
+    - State that they can provide all the details at once but ask for them one at a time.
 
 Ensure the response is polite, concise, and easy to understand.
+NEVER STATE THE DETAILS ARE MISSING, ASK FOR THEM INSTEAD.
 """
 
 
@@ -413,13 +413,13 @@ def ask_appointment_info(state: HospitalSystemState):
     missing_details = []
 
     if not name:
-        missing_details.append("Full Name")
+        missing_details.append(" - Full Name")
 
     if not email:
-        missing_details.append("Email")
+        missing_details.append(" - Email")
 
     if not reason:
-        missing_details.append("Reason")
+        missing_details.append(" - Reason")
 
     formatted_system_prompt = ask_appointment_info_system_prompt.format(
         missing_details="\n".join(missing_details)
@@ -461,7 +461,7 @@ def should_continue_to_get_appointment_info(state: HospitalSystemState):
 get_appointment_info_system_prompt = """
 You are an AI assistant tasked with extracting structured appointment information from user queries. Extract the following details if they are provided:
 
-1. `full_name`: The full name of the patient.
+1. `full_name`: The full name of the patient, if name is in the query update the field.
 2. `email`: The email address of the patient.
 3. `reason`: The reason for the appointment. The reason must be related to a symptom or disease mentioned in the query. if not mentioned, exclude it from the output. Eg. "Appointment with Dr. Sam" cannot be a reason. DO NOT include the doctor's name in the reason. AGAIN DO NOT ASSUME THE REASON UNLESS IT IS EXPLICITLY MENTIONED OR RELATED TO A SYMPTOM OR DISEASE.
 4. If the user show any indication of stopping or cancelling or requesting for information, set the `stop_procceing` true or false.
@@ -483,6 +483,8 @@ def get_appointment_info(state: HospitalSystemState):
         "messages": [HumanMessage(content=query)],
         "response_type": "message",
     }
+
+    print(appointment_info)
 
     if appointment_info.full_name:
         next_state["patient_name"] = appointment_info.full_name
