@@ -83,7 +83,9 @@ def ask_availability_details(state: HospitalSystemState):
         known_details="\n".join(known_details),
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
 
     response = llm.invoke(messages)
 
@@ -118,9 +120,11 @@ def availability_chat_agent(state: HospitalSystemState):
         todays_date_time=todays_date_time
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)] + [
-        HumanMessage(content=query)
-    ]
+    messages = (
+        state["messages"][-1:]
+        + [SystemMessage(content=formatted_system_prompt)]
+        + [HumanMessage(content=query)]
+    )
 
     # Invoke the model
     availability = cast(DoctorAvailability, structured_llm.invoke(messages))
@@ -204,9 +208,13 @@ def find_doctor(state: HospitalSystemState):
         results=gene.format(results)
     )
 
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
+
     doctor = cast(
         Doctor,
-        structured_llm.invoke([SystemMessage(content=formatted_system_prompt)]),
+        structured_llm.invoke(messages),
     )
 
     next_state: NextHospitalSystemState = {
@@ -269,7 +277,9 @@ def check_doctors_availability(state: HospitalSystemState):
     )
 
     structured_llm = llm.with_structured_output(Availability)
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
 
     response = cast(Availability, structured_llm.invoke(messages))
 
@@ -331,9 +341,11 @@ def get_appointment_date_time(state: HospitalSystemState):
         start_date=start_date, end_date=end_date
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)] + [
-        HumanMessage(content=query)
-    ]
+    messages = (
+        state["messages"][-1:]
+        + [SystemMessage(content=formatted_system_prompt)]
+        + [HumanMessage(content=query)]
+    )
 
     appointment_date = cast(AppointmentDate, structured_llm.invoke(messages))
 
@@ -425,7 +437,9 @@ def ask_appointment_info(state: HospitalSystemState):
         missing_details="\n".join(missing_details)
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
 
     response = llm.invoke(messages)
 
@@ -473,9 +487,11 @@ def get_appointment_info(state: HospitalSystemState):
 
     structured_llm = llm.with_structured_output(AppointmentInfo)
 
-    messages = [SystemMessage(content=get_appointment_info_system_prompt)] + [
-        HumanMessage(content=query)
-    ]
+    messages = (
+        state["messages"][-1:]
+        + [SystemMessage(content=get_appointment_info_system_prompt)]
+        + [HumanMessage(content=query)]
+    )
 
     appointment_info = cast(AppointmentInfo, structured_llm.invoke(messages))
 
@@ -567,7 +583,9 @@ def ask_appointment_confirmation(state: HospitalSystemState):
         reason=reason,
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
 
     response = llm.invoke(messages)
 
@@ -601,9 +619,11 @@ def get_appointment_confirmation(state: HospitalSystemState):
 
     structured_llm = llm.with_structured_output(ConfirmBooking)
 
-    messages = [
-        SystemMessage(content=get_appointment_confirmation_system_prompt)
-    ] + [HumanMessage(content=query)]
+    messages = (
+        state["messages"][-1:]
+        + [SystemMessage(content=get_appointment_confirmation_system_prompt)]
+        + [HumanMessage(content=query)]
+    )
 
     confirmation = cast(ConfirmBooking, structured_llm.invoke(messages))
 
@@ -738,7 +758,9 @@ def book_appointment_with_info(state: HospitalSystemState):
         response=json.dumps(response["data"], indent=2)
     )
 
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
     response = llm.invoke(messages)
 
     return {

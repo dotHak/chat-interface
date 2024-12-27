@@ -3,11 +3,4 @@
 from typing import Any
 
 class Resource:
-    class HChatInterface:
-        service: str
-        type: str
-        url: str
-    class HospitalNavigationInterfaceVpc:
-        bastion: str
-        type: str
 

@@ -31,9 +31,11 @@ def detect_patient_intent(state: HospitalSystemState):
 
     structured_llm = llm.with_structured_output(PatientIntent)
 
-    messages = [SystemMessage(content=patient_intent_system_prompt)] + [
-        HumanMessage(content=query)
-    ]
+    messages = (
+        state["messages"][-1:]
+        + [SystemMessage(content=patient_intent_system_prompt)]
+        + [HumanMessage(content=query)]
+    )
 
     intent = cast(PatientIntent, structured_llm.invoke(messages))
 
@@ -80,13 +82,17 @@ def extract_preliminary_info(state: HospitalSystemState):
     structured_llm = llm.with_structured_output(HospitalSystem)
 
     todays_date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    messages = [
-        SystemMessage(
-            content=preliminary_info_system_prompt.format(
-                todays_date_time=todays_date_time
+    messages = (
+        state["messages"][-1:]
+        + [
+            SystemMessage(
+                content=preliminary_info_system_prompt.format(
+                    todays_date_time=todays_date_time
+                )
             )
-        )
-    ] + [HumanMessage(content=query)]
+        ]
+        + [HumanMessage(content=query)]
+    )
 
     info = cast(HospitalSystem, structured_llm.invoke(messages))
 
@@ -219,7 +225,9 @@ def find_potential_doctors(state: HospitalSystemState):
 
     structured_llm = llm.with_structured_output(PotentialDoctors)
 
-    messages = [SystemMessage(content=formatted_system_prompt)]
+    messages = state["messages"][-1:] + [
+        SystemMessage(content=formatted_system_prompt)
+    ]
 
     potential_doctors = cast(PotentialDoctors, structured_llm.invoke(messages))
 
